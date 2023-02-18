@@ -1,5 +1,5 @@
 
-## we need it to set up the budget
+# we need it to set up the budget
 export $AWS_ACCOUNT_ID = $(aws sts get-caller-identity --query Account --output text)
 
 aws budgets create-budget \
@@ -7,3 +7,17 @@ aws budgets create-budget \
     --budget file://aws/json/budget.json \
     --notifications-with-subscribers file://aws/json/budget-notifications.json
 
+# create SNS topic for alarm and use its ARN for subscription
+# current "arn:aws:sns:us-west-2:610340716940:billing-alarm"
+export AWS_BUDGET_ALARM_TOPIC_ARN = $(aws sns create-topic --name billing-alarm --query TopicArn)
+
+# subscription needs to be confirmed via link in email
+aws sns subscribe \
+    --topic-arn=$AWS_BUDGET_ALARM_TOPIC_ARN \
+    --protocol=email \
+    --notification-endpoint=dezolkin@gmail.com
+    
+# subscription id: arn:aws:sns:us-west-2:610340716940:billing-alarm:cd3ea719-c451-4d95-9f12-cd5b8e5fb831
+
+# daily spend alarm https://aws.amazon.com/premiumsupport/knowledge-center/cloudwatch-estimatedcharges-alarm/
+aws cloudwatch put-metric-alarm --cli-input-json file://aws/json/alarm.json
