@@ -1,0 +1,7 @@
+aws events put-rule \
+    --name "hw0-aws-global-health-events-cli" \
+    --event-pattern file://aws/json/aws-all-health-events-pattern.json
+
+aws events put-targets \
+    --rule "hw0-aws-global-health-events-cli" \
+    --targets=file://aws/json/event-bridge-rule-targets.json

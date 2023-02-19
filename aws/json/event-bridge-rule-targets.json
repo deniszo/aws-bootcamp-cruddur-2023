@@ -1,0 +1,6 @@
+[
+  {
+    "Id": "hw0-aws-health-events-topic",
+    "Arn": "arn:aws:sns:us-east-1:610340716940:hw0-aws-health-events-topic"
+  }
+]
