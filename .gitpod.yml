@@ -1,4 +1,9 @@
 tasks:
+  - name: "init script"
+    env:
+      FRONTEND_PORT: 3000
+      BACKEND_PORT: 4567
+      FRONTEND_URL: "$(gp url $FRONTEND_PORT)"
   - name: aws-cli
     env:
       AWS_CLI_AUTO_PROMPT: on-partial
@@ -11,3 +16,7 @@ tasks:
 vscode:
   extensions:
     - 42Crunch.vscode-openapi
+ports:
+  - port: 3000
+    onOpen: open-preview
+  - port: 4567

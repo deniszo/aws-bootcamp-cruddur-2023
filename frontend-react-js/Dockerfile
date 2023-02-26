@@ -1,0 +1,9 @@
+FROM node:16.18
+
+WORKDIR /frontend-react-js
+
+COPY . .
+
+RUN npm install
+EXPOSE ${FRONTEND_PORT}
+CMD PORT=$FRONTEND_PORT REACT_APP_BACKEND_URL=$BACKEND_URL npm start
