@@ -47,6 +47,38 @@ Also there is an OCI (Open Container Initiative) which standardizes how the imag
 
 The images are **_pushed_** into the registry, from where the consumers **_pull_** them.
 
+Containers will be relying on several ENV variables, several of which will differ depending on wether they are run in gitpod or locally.
+
+Same for all envs
+
+```bash
+export BACKEND_PORT=4567
+export FRONTEND_PORT=3000
+env | grep _PORT
+BACKEND_PORT=4567
+FRONTEND_PORT=3000
+```
+
+Host dependent:
+
+- gitpod
+
+  ```bash
+  export BACKEND_URL=$(gp url $BACKEND_PORT)
+  export FRONTEND_URL=$(gp url $FRONTEND_PORT)
+  ```
+
+  Remember to also open respective ports in Gitpod UI
+
+- localhost
+  ```bash
+  export BACKEND_URL="http://localhost:$BACKEND_PORT"
+  export FRONTEND_URL="http://localhost:$FRONTEND_PORT"
+  env | grep _URL
+  BACKEND_URL=http://localhost:4567
+  FRONTEND_URL=http://localhost:3000
+  ```
+
 A Dockerfile (no extension is due to unknown historic reasons) defines the container:
 
 ```dockerfile
@@ -67,11 +99,15 @@ COPY . .
 
 # Inside
 ENV FLASK_ENV=development
+# required env vars
+ENV PORT $BACKEND_PORT
+ENV FRONTEND_URL $FRONTEND_URL
+ENV BACKEND_URL $BACKEND_URL
 
 # Inside -> Outside
 EXPOSE ${PORT}
 
-CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0", "--port=4567"]
+CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0", "--port=${PORT}"]
 ```
 
 Instructions are pretty much self-explanatory but just in case:
@@ -148,7 +184,7 @@ The output:
 To run it:
 
 ```bash
-$ docker run --rm -p 4567:4567 -it -e FRONTEND_URL='*' -e BACKEND_URL='*' [-d] backend-flask
+$ docker run --rm -p $BACKEND_PORT:$BACKEND_PORT -it -e FRONTEND_URL -e BACKEND_URL -e BACKEND_PORT backend-flask
 ```
 
 `-d` can be used to run in "detached" mode
@@ -187,7 +223,9 @@ Containerizing frontend:
 # frontend-react-js/Dockerfile
 FROM node:16.18
 
-ENV PORT=3000
+#required env vars
+ENV PORT $FRONTEND_PORT
+ENV REACT_APP_BACKEND_URL $BACKEND_URL
 
 COPY . /frontend-react-js
 WORKDIR /frontend-react-js
@@ -205,8 +243,10 @@ docker build -t frontend-react-js ./frontend-react-js
 Run Container:
 
 ```bash
-docker run -p 3000:3000 -d -e REACT_APP_BACKEND_URL='localhost:4567' frontend-react-js
+docker run --rm -it -p $FRONTEND_PORT:$FRONTEND_PORT -e BACKEND_URL -e FRONTEND_PORT frontend-react-js
 ```
 
 After adapting `docker-compose.yaml` to run locally, it's alive:
 ![](./assets/docker-compose-up.png)
+
+Nice explanations about ENV vars: https://www.youtube.com/watch?v=vOoCFxlQIbE&t=1s
