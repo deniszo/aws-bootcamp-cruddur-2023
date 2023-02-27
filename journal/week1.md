@@ -250,3 +250,65 @@ After adapting `docker-compose.yaml` to run locally, it's alive:
 ![](./assets/docker-compose-up.png)
 
 Nice explanations about ENV vars: https://www.youtube.com/watch?v=vOoCFxlQIbE&t=1s
+
+### DynamoDB and Postgres
+
+[DynamoDB snippets from #100DaysOfCloud](https://github.com/100DaysOfCloud/challenge-dynamodb-local)
+
+Create a table:
+```bash
+aws dynamodb create-table \
+    --endpoint-url http://localhost:8000 \
+    --table-name Music \
+    --attribute-definitions \
+        AttributeName=Artist,AttributeType=S \
+        AttributeName=SongTitle,AttributeType=S \
+    --key-schema AttributeName=Artist,KeyType=HASH AttributeName=SongTitle,KeyType=RANGE \
+    --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1 \
+    --table-class STANDARD
+```
+
+Create an Item:
+```bash
+aws dynamodb put-item \
+    --endpoint-url http://localhost:8000 \
+    --table-name Music \
+    --item \
+        '{"Artist": {"S": "No One You Know"}, "SongTitle": {"S": "Call Me Today"}, "AlbumTitle": {"S": "Somewhat Famous"}}' \
+    --return-consumed-capacity TOTAL
+
+    {
+      "ConsumedCapacity": {
+          "TableName": "Music",
+          "CapacityUnits": 1.0
+      }
+    }
+```
+
+List Tables
+```bash
+aws dynamodb list-tables --endpoint-url http://localhost:8000
+```
+
+Get Records
+```bash
+aws dynamodb scan --table-name Music --query "Items" --endpoint-url http://localhost:8000
+```
+
+Connect to PG:
+```bash
+$ psql -h localhost -Upostgres
+Password for user postgres: 
+psql (13.10 (Ubuntu 13.10-1.pgdg20.04+1))
+Type "help" for help.
+
+postgres=# \d
+Did not find any relations.
+postgres=# \t
+Tuples only is on.
+postgres=# \dl
+      Large objects
+ ID | Owner | Description 
+----+-------+-------------
+(0 rows)
+```
